@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ltud_lab/controller/login_controller.dart';
-import 'package:ltud_lab/controller/shop/shop_controller.dart';
+import 'package:ltud_lab/controller/shop_controller.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

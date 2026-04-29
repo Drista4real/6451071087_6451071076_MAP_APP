@@ -12,7 +12,20 @@
           "package_name": "com.example.ltud_lab"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "557588453189-kt1c03bjb5d2rniqub14j8mhhk1bkp5a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ltud_lab",
+            "certificate_hash": "4c462479e584252746403aeb3b6c1e99dcb19654"
+          }
+        },
+        {
+          "client_id": "557588453189-2v64g7s8i56jqpi0rcorj8k2tat5lmpn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCZbjrmLC46tVu6EfdQQZROv6QSlLO3qPM"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "557588453189-2v64g7s8i56jqpi0rcorj8k2tat5lmpn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "557588453189-v89p3n6fp5sbff3et1jbah8v15lsu8rr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.ltudLab"
+              }
+            }
+          ]
         }
       }
     }

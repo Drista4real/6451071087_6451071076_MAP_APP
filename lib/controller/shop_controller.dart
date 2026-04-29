@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import '../../data/models/shop/shop_models.dart';
-import '../../data/services/shop_service.dart';
+import '../data/models/shop_models.dart';
+import '../data/services/shop_service.dart';
 
 class ShopController extends GetxController {
   final ShopService _shopService = ShopService();

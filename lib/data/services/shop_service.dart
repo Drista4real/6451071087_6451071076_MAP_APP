@@ -1,4 +1,4 @@
-import '../models/shop/shop_models.dart';
+import '../models/shop_models.dart';
 
 class ShopService {
   List<ShopBanner> getBanners() {
