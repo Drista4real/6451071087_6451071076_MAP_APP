@@ -5,7 +5,17 @@ import 'package:ltud_lab/screens/auth/register_screen.dart';
 import 'package:ltud_lab/screens/auth/register_success_screen.dart';
 import 'package:ltud_lab/screens/auth/reset_email_sent_screen.dart';
 import 'package:ltud_lab/screens/auth/verify_email_screen.dart';
+import 'package:ltud_lab/screens/bank_account/my_bank_account_screen.dart';
 import 'package:ltud_lab/screens/onboarding/onboarding_screen.dart';
+import 'package:ltud_lab/screens/profile/change_dateofbirth_screen.dart';
+import 'package:ltud_lab/screens/profile/change_email_screen.dart';
+import 'package:ltud_lab/screens/profile/change_gender_screen.dart';
+import 'package:ltud_lab/screens/profile/change_name_screen.dart';
+import 'package:ltud_lab/screens/profile/change_password_screen.dart';
+import 'package:ltud_lab/screens/profile/change_phonenumber_screen.dart';
+import 'package:ltud_lab/screens/profile/change_username_screen.dart';
+import 'package:ltud_lab/screens/profile/update_account_screen.dart';
+import 'package:ltud_lab/screens/shipping_address/my_shipping_address_screen.dart';
 import '../screens/home/main_navigation_screen.dart';
 import '../screens/splash/splash_screen.dart';
 
@@ -38,17 +48,27 @@ class AppRoutes {
   static Map<String, WidgetBuilder> routes = {
     splash: (context) => const SplashScreen(),
     onboarding: (context) => const OnboardingScreen(),
-    home: (context) => const MainNavigationScreen(),
-    register: (context) => const RegisterScreen(),
     login: (context) => const LoginScreen(),
     forgetPassword: (context) => ForgetPasswordScreen(),
+    register: (context) => const RegisterScreen(),
+    registerSuccess: (context) => const RegisterSuccessScreen(),
+    home: (context) => const MainNavigationScreen(),
+    updateAccount: (context) => const UpdateAccountScreen(),
+    changeName: (context) => const ChangeNameScreen(),
+    changeUsername: (context) => const ChangeUsernameScreen(),
+    changePassword: (context) => const ChangePasswordScreen(),
+    changeEmail: (context) => const ChangeEmailScreen(),
+    changePhoneNumber: (context) => const ChangePhoneNumberScreen(),
+    changeGender: (context) => const ChangeGenderScreen(),
+    changeDateofBirth: (context) => const ChangeDateOfBirthScreen(),
+    myShippingAddressview: (context) => MyShippingAddressScreen(),
+    myBankAccountview: (context) => MyBankAccountScreen(),
     verifyEmail: (context) {
       final String email = ModalRoute.of(context)!.settings.arguments as String;
       return VerifyEmailScreen(email: email);
     },
-    registerSuccess: (context) => const RegisterSuccessScreen(),
     resetEmailSent: (context) {
-      final email = ModalRoute.of(context)!.settings.arguments as String;
+      final String email = ModalRoute.of(context)!.settings.arguments as String;
       return ResetEmailSentScreen(email: email);
     },
   };
