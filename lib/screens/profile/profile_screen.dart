@@ -46,7 +46,7 @@ class ProfileScreen extends StatelessWidget {
         children: [
           const CircleAvatar(
             radius: 32,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/300'),
+            backgroundImage: AssetImage('assets/images/banners/default_image.png'),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -131,7 +131,7 @@ class ProfileScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const MyShippingAddressScreen()),
+              MaterialPageRoute(builder: (_) => MyShippingAddressScreen()),
             );
           },
         ),
@@ -150,7 +150,7 @@ class ProfileScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const MyBankAccountScreen()),
+              MaterialPageRoute(builder: (_) => MyBankAccountScreen()),
             );
           },
         ),

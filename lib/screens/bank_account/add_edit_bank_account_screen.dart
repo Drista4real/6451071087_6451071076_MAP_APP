@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/data/models/bank_account_model.dart';
 import '/controller/bank_account_controller.dart';
 import '/data/services/list_bank_api_service.dart';
+import '/common/widgets/safe_network_image.dart';
 
 class EditBankAccountScreen extends StatefulWidget {
   final BankAccountModel? bank;
@@ -124,11 +125,12 @@ class _EditBankAccountScreenState extends State<EditBankAccountScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Image.network(
-              _selectedBank['logo'],
+            SafeNetworkImage(
+              url: _selectedBank['logo'] as String?,
               height: 40,
               width: 80,
               fit: BoxFit.contain,
+              fallback: const Icon(Icons.account_balance, size: 28),
             ),
             const SizedBox(width: 16),
             Expanded(

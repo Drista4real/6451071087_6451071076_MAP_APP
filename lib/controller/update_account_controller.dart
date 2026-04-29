@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ltud_lab/controller/login_controller.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/services/update_account_service.dart';
 
 class UpdateAccountController extends GetxController {
@@ -58,7 +58,7 @@ class UpdateAccountController extends GetxController {
     await _service.updatePhone(phone);
   }
 
-  Stream getUserData() {
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getUserData() {
     return _service.getUserData();
   }
 }

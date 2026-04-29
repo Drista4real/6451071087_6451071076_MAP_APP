@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final TextEditingController passwordController = TextEditingController();
 
   // Bạn có thể cần dùng Get.find<AuthController>() thay vì Get.put nếu controller đã được khởi tạo ở nơi khác
-  final AuthController authController = Get.put(AuthController());
+  final AuthController authController = Get.find<AuthController>();
 
   bool isPasswordHidden = true;
   bool rememberMe = false;

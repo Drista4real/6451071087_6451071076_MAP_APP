@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import '../data/models/user_model.dart';
 import '../data/services/register_auth_service.dart';
 

@@ -203,7 +203,7 @@ class UpdateAccountScreen extends StatelessWidget {
                 ),
                 child: const CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage('https://i.pravatar.cc/300'),
+                  backgroundImage: AssetImage('assets/images/banners/default_image.png'),
                 ),
               ),
               CircleAvatar(

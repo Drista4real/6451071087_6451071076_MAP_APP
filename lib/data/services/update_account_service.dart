@@ -46,7 +46,6 @@ class UpdateAccountService {
 
   Future<void> updateEmail(String newEmail) async {
     final user = _auth.currentUser!;
-    final uid = user.uid;
 
     if (user.email == newEmail) {
       throw Exception("Email mới trùng với email hiện tại");
@@ -85,7 +84,7 @@ class UpdateAccountService {
     await _firestore.collection('users').doc(uid).update({'email': user.email});
   }
 
-  Stream<DocumentSnapshot> getUserData() {
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getUserData() {
     final uid = _auth.currentUser!.uid;
     return _firestore.collection('users').doc(uid).snapshots();
   }

@@ -1,236 +1,227 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ltud_lab/controller/login_controller.dart';
+import 'package:ltud_lab/controller/shop/shop_controller.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    String fullName = "Guest User";
+    if (!Get.isRegistered<ShopController>()) {
+      Get.put(ShopController());
+    }
 
-    return Scaffold(
-      body: Column(
-        children: [
-          /// ===== HEADER =====
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: Colors.blue,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+    return GetBuilder<ShopController>(
+      builder: (shopController) {
+        final authController = Get.isRegistered<AuthController>()
+            ? Get.find<AuthController>()
+            : null;
+        final fullName = authController?.currentUser?.fullName.isNotEmpty == true
+            ? authController!.currentUser!.fullName
+            : 'Guest User';
+        final latestOrder = shopController.orderUpdates.isNotEmpty
+            ? shopController.orderUpdates.first
+            : null;
+
+        return Scaffold(
+          body: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
                         children: [
-                          const Text(
-                            'Good day for shopping',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            fullName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-
-                      /// Notification Icon (UI only)
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.notifications,
-                          color: Colors.white,
-                        ),
-                      ),
-
-                      /// Cart Icon (UI only)
-                      Stack(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.shopping_cart,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Positioned(
-                            right: 6,
-                            top: 6,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Text(
-                                "2", // mock số lượng
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Good day for shopping', style: TextStyle(color: Colors.white70)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  fullName,
+                                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  /// SEARCH BAR (UI only)
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Tìm kiếm trong cửa hàng',
-                      prefixIcon: const Icon(Icons.search),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  /// CATEGORY TITLE
-                  const Text(
-                    'Danh mục phổ biến',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  /// CATEGORY LIST (MOCK)
-                  SizedBox(
-                    height: 90,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: List.generate(5, (index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: Column(
+                          Stack(
                             children: [
-                              const CircleAvatar(
-                                radius: 30,
-                                backgroundImage: NetworkImage(
-                                  'https://via.placeholder.com/150',
-                                ),
+                              IconButton(
+                                onPressed: () {},
+                                icon: const Icon(Icons.shopping_cart, color: Colors.white),
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                "Category ${index + 1}",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
+                              Positioned(
+                                right: 8,
+                                top: 8,
+                                child: CircleAvatar(
+                                  radius: 9,
+                                  backgroundColor: Colors.red,
+                                  child: Text(
+                                    '${shopController.cartQuantity}',
+                                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      }),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          /// ===== CONTENT =====
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// BANNER MOCK
-                  Container(
-                    height: 150,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.grey[300],
-                    ),
-                    child: const Center(child: Text("Banner Slider")),
-                  ),
-                  const SizedBox(height: 24),
-
-                  /// TITLE
-                  Row(
-                    children: [
-                      const Text(
-                        'Sản phẩm phổ biến',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                        ],
+                      ),
+                      if (latestOrder != null) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            'Cap nhat ${latestOrder.orderCode}: ${latestOrder.status}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      TextField(
+                        onChanged: shopController.updateSearch,
+                        decoration: InputDecoration(
+                          hintText: 'Tim kiem san pham phu kien the thao',
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text('Xem tất cả'),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 40,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (_, index) {
+                            final category = shopController.categories[index];
+                            final selected = category.id == shopController.selectedCategoryId;
+                            return ChoiceChip(
+                              label: Text(category.name),
+                              selected: selected,
+                              onSelected: (_) => shopController.selectCategory(category.id),
+                            );
+                          },
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemCount: shopController.categories.length,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  /// PRODUCT GRID (MOCK)
-                  GridView.builder(
-                    itemCount: 6,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.58,
-                    ),
-                    itemBuilder: (context, index) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                color: Colors.grey[300],
-                                child: const Center(child: Text("Image")),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text("Product Name"),
-                            const SizedBox(height: 4),
-                            const Text(
-                              "\$99",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                ),
               ),
-            ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 150,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: shopController.banners.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 10),
+                          itemBuilder: (_, index) {
+                            final banner = shopController.banners[index];
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                banner.imagePath,
+                                width: 300,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: 300,
+                                  color: Colors.grey.shade300,
+                                  alignment: Alignment.center,
+                                  child: Text(banner.title),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text('San pham pho bien', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 12),
+                      GridView.builder(
+                        itemCount: shopController.filteredProducts.length,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.64,
+                        ),
+                        itemBuilder: (_, index) {
+                          final product = shopController.filteredProducts[index];
+                          return Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+                                    child: Image.asset(
+                                      product.imagePath,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        color: Colors.grey.shade300,
+                                        alignment: Alignment.center,
+                                        child: const Icon(Icons.image),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                      const SizedBox(height: 4),
+                                      Text('\$${product.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

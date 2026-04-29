@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/controller/bank_account_controller.dart';
 import '/data/models/bank_account_model.dart';
 import 'add_edit_bank_account_screen.dart';
+import '/common/widgets/safe_network_image.dart';
 
 class MyBankAccountScreen extends StatelessWidget {
   final BankAccountController _controller = BankAccountController();
@@ -99,11 +100,11 @@ class MyBankAccountScreen extends StatelessWidget {
               // Logo ngân hàng
               Container(
                 padding: const EdgeInsets.all(8),
-                child: Image.network(
-                  bank.logo,
+                child: SafeNetworkImage(
+                  url: bank.logo,
                   width: 50,
                   height: 50,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.account_balance, size: 40),
+                  fallback: const Icon(Icons.account_balance, size: 40),
                 ),
               ),
               const SizedBox(width: 8),
