@@ -1,6 +1,8 @@
 # ltud_lab
 
 A new Flutter project.
+Nhánh Dev là nơi nhóm phát triển sản phẩm
+Nhánh main là nơi chứa sản phẩm khi nó đã sẵn sàng 
 
 ## Getting Started
 
