@@ -1,43 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ltud_lab/controller/login_controller.dart';
-import 'package:ltud_lab/screens/shipping_address/my_shipping_address_screen.dart';
 import '../../common/styles/app_colors.dart';
 import '../../common/styles/app_text_styles.dart';
 import '../../common/widgets/profile_menu_item.dart';
 import '../../routes/app_routes.dart';
+import '../order/my_order_screen.dart';
 import '../bank_account/my_bank_account_screen.dart';
+import '../notifications/my_notifications.dart';
+import '../shipping_address/my_shipping_address_screen.dart'; // Đã fix lỗi xuống dòng ở import
+import 'package:draf_project/controller/login_controller.dart';
+import 'package:draf_project/controller/settings_controller.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Sử dụng GetBuilder với kiểu AuthController rõ ràng
     return GetBuilder<AuthController>(
       builder: (authController) {
         bool loggedIn = authController.currentUser != null;
-
         if (!loggedIn) {
           return _buildGuestProfile(context);
         }
-
         return _buildUserProfile(context, authController);
       },
     );
   }
 
-  /// ===== Header xanh =====
+  /// ===== Header =====
   Widget _buildHeader(BuildContext context, AuthController authController) {
     final user = authController.currentUser;
-
     String fullName = '';
     String email = '';
-
     if (user != null) {
       fullName = '${user.firstName} ${user.lastName}';
       email = user.email;
     }
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
@@ -46,29 +45,16 @@ class ProfileScreen extends StatelessWidget {
         children: [
           const CircleAvatar(
             radius: 32,
-            backgroundImage: AssetImage('assets/images/banners/default_image.png'),
+            backgroundImage: NetworkImage('https://i.pravatar.cc/300'),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  fullName,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                Text(fullName, style: AppTextStyle.whiteTitle),
                 const SizedBox(height: 4),
-                Text(
-                  email,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
-                ),
+                Text(email, style: AppTextStyle.whiteSubtitle),
               ],
             ),
           ),
@@ -106,6 +92,9 @@ class ProfileScreen extends StatelessWidget {
                     _buildAccountSetting(context),
                     const SizedBox(height: 24),
                     _buildAppSettingLabel(),
+                    const SizedBox(height: 16),
+                    _buildAppSettings(),
+                    const SizedBox(height: 24),
                     _buildLogoutButton(context),
                   ],
                 ),
@@ -131,7 +120,7 @@ class ProfileScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => MyShippingAddressScreen()),
+              MaterialPageRoute(builder: (_) => const MyShippingAddressScreen()),
             );
           },
         ),
@@ -144,61 +133,93 @@ class ProfileScreen extends StatelessWidget {
           },
         ),
         ProfileMenuItem(
+          icon: Icons.receipt_long,
+          title: 'Đơn hàng của tôi',
+          subtitle: 'Theo dõi đơn hàng của bạn',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MyOrderScreen()),
+            );
+          },
+        ),
+        ProfileMenuItem(
           icon: Icons.account_balance,
           title: 'Tài khoản ngân hàng',
           subtitle: 'Quản lý phương thức thanh toán',
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => MyBankAccountScreen()),
+              MaterialPageRoute(builder: (_) => const MyBankAccountScreen()),
             );
           },
         ),
         ProfileMenuItem(
-          icon: Icons.discount,
-          title: 'Mã giảm giá',
-          subtitle: 'Xem các mã giảm giá có sẵn',
-          onTap: () {},
-        ),
-        ProfileMenuItem(
-          icon: Icons.lock,
-          title: 'Bảo mật tài khoản',
-          subtitle: 'Cài đặt bảo mật và quyền riêng tư',
-          onTap: () {},
+          icon: Icons.notifications,
+          title: 'Thông báo',
+          subtitle: 'Cài đặt thông báo',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MyNotificationScreen()),
+            );
+          },
         ),
       ],
     );
   }
 
-  /// ===== App Setting label =====
   Widget _buildAppSettingLabel() {
     return Text('Cài đặt ứng dụng', style: AppTextStyle.title);
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
-    final AuthController authController = Get.find<AuthController>();
+  Widget _buildAppSettings() {
+    final SettingsController controller = Get.find();
+    return Obx(
+      () => Column(
+        children: [
+          ProfileMenuItem(
+            icon: Icons.dark_mode,
+            title: 'Giao diện',
+            subtitle: controller.themeMode.value.name,
+            onTap: () => _showThemeDialog(controller),
+          ),
+          ProfileMenuItem(
+            icon: Icons.text_fields,
+            title: 'Cỡ chữ',
+            subtitle: controller.fontSize.value,
+            onTap: () => _showFontDialog(controller),
+          ),
+          ProfileMenuItem(
+            icon: Icons.language,
+            title: 'Ngôn ngữ',
+            subtitle: controller.locale.value.languageCode,
+            onTap: () => _showLanguageDialog(controller),
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildLogoutButton(BuildContext context) {
+    final AuthController authController = Get.find();
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: GestureDetector(
         onTap: () async {
-          bool? confirm = await showDialog<bool>(
+          bool? confirm = await showDialog(
             context: context,
-            builder: (BuildContext dialogContext) {
+            builder: (dialogContext) {
               return AlertDialog(
                 title: const Text('Đăng xuất'),
                 content: const Text('Bạn có chắc muốn đăng xuất không?'),
                 actions: [
                   TextButton(
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop(false);
-                    },
+                    onPressed: () => Navigator.pop(dialogContext, false),
                     child: const Text('Hủy'),
                   ),
                   TextButton(
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop(true);
-                    },
+                    onPressed: () => Navigator.pop(dialogContext, true),
                     child: const Text(
                       'Đăng xuất',
                       style: TextStyle(color: Colors.red),
@@ -208,18 +229,13 @@ class ProfileScreen extends StatelessWidget {
               );
             },
           );
-
           if (confirm == true) {
             await authController.logout();
-
-            // Đảm bảo an toàn khi gọi Navigator sau await
-            if (context.mounted) {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.home,
-                    (route) => false,
-              );
-            }
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.home,
+              (route) => false,
+            );
           }
         },
         child: Container(
@@ -277,6 +293,93 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // DIALOGS
+  void _showThemeDialog(SettingsController controller) {
+    Get.defaultDialog(
+      title: "Chọn Giao diện",
+      content: Column(
+        children: [
+          ListTile(
+            title: const Text("Sáng"),
+            onTap: () {
+              controller.changeTheme('light');
+              Get.back();
+            },
+          ),
+          ListTile(
+            title: const Text("Tối"),
+            onTap: () {
+              controller.changeTheme('dark');
+              Get.back();
+            },
+          ),
+          ListTile(
+            title: const Text("Theo hệ thống"),
+            onTap: () {
+              controller.changeTheme('system');
+              Get.back();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFontDialog(SettingsController controller) {
+    Get.defaultDialog(
+      title: "Cỡ chữ",
+      content: Column(
+        children: [
+          ListTile(
+            title: const Text("Nhỏ"),
+            onTap: () {
+              controller.changeFontSize('small');
+              Get.back();
+            },
+          ),
+          ListTile(
+            title: const Text("Vừa"),
+            onTap: () {
+              controller.changeFontSize('medium');
+              Get.back();
+            },
+          ),
+          ListTile(
+            title: const Text("Lớn"),
+            onTap: () {
+              controller.changeFontSize('large');
+              Get.back();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog(SettingsController controller) {
+    Get.defaultDialog(
+      title: "Ngôn ngữ",
+      content: Column(
+        children: [
+          ListTile(
+            title: const Text("Tiếng Việt"),
+            onTap: () {
+              controller.changeLanguage('vi');
+              Get.back();
+            },
+          ),
+          ListTile(
+            title: const Text("English"),
+            onTap: () {
+              controller.changeLanguage('en');
+              Get.back();
+            },
           ),
         ],
       ),
