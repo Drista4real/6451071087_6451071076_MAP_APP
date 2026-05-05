@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:draf_project/controller/login_controller.dart';
+import 'package:ltud_lab/controller/login_controller.dart';
 
 class WishlistManager {
   static final WishlistManager _instance = WishlistManager._internal();

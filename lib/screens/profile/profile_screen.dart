@@ -8,8 +8,8 @@ import '../order/my_order_screen.dart';
 import '../bank_account/my_bank_account_screen.dart';
 import '../notifications/my_notifications.dart';
 import '../shipping_address/my_shipping_address_screen.dart'; // Đã fix lỗi xuống dòng ở import
-import 'package:draf_project/controller/login_controller.dart';
-import 'package:draf_project/controller/settings_controller.dart';
+import 'package:ltud_lab/controller/login_controller.dart';
+import 'package:ltud_lab/controller/settings_controller.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -45,8 +45,7 @@ class ProfileScreen extends StatelessWidget {
         children: [
           const CircleAvatar(
             radius: 32,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/300'),
-          ),
+            backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=User&background=random'),          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -120,7 +119,7 @@ class ProfileScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const MyShippingAddressScreen()),
+              MaterialPageRoute(builder: (_) => MyShippingAddressScreen()),
             );
           },
         ),
@@ -150,7 +149,7 @@ class ProfileScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const MyBankAccountScreen()),
+              MaterialPageRoute(builder: (_) => MyBankAccountScreen()),
             );
           },
         ),
@@ -161,7 +160,7 @@ class ProfileScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const MyNotificationScreen()),
+              MaterialPageRoute(builder: (_) => MyNotificationScreen()),
             );
           },
         ),

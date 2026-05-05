@@ -1,19 +1,18 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:draf_project/controller/cart_controller.dart';
-import 'package:draf_project/controller/login_controller.dart';
-import 'package:draf_project/data/models/address_model.dart';
-import 'package:draf_project/data/models/cart_item_model.dart';
-import 'package:draf_project/data/models/coupon_model.dart';
-import 'package:draf_project/data/models/order_model.dart';
-import 'package:draf_project/data/services/order_service.dart';
-import 'package:draf_project/screens/order/order_success_screen.dart';
+import 'package:ltud_lab/controller/cart_controller.dart';
+import 'package:ltud_lab/controller/login_controller.dart';
+import 'package:ltud_lab/data/models/address_model.dart';
+import 'package:ltud_lab/data/models/coupon_model.dart';
+import 'package:ltud_lab/data/models/order_model.dart';
+import 'package:ltud_lab/data/services/order_service.dart';
+import 'package:ltud_lab/screens/order/order_success_screen.dart';
 import 'package:get/get.dart';
 
 class OrderController extends GetxController {
   /// ================= CONTROLLER =================
-  final cart = Get.find();
-  final auth = Get.find();
+  final cart = Get.find<CartController>();
+  final auth = Get.find<AuthController>();
 
   /// ================= STATE =================
   RxList items = [].obs;
@@ -21,9 +20,9 @@ class OrderController extends GetxController {
   RxDouble tax = 0.0.obs;
   RxDouble shippingFee = 0.0.obs;
   RxDouble discountAmount = 0.0.obs;
-  Rxn coupon = Rxn();
-  Rxn selectedAddress = Rxn();
-  RxList addresses = [].obs;
+  Rxn<CouponModel> coupon = Rxn<CouponModel>();
+  Rxn<AddressModel> selectedAddress = Rxn<AddressModel>();
+  RxList<AddressModel> addresses = <AddressModel>[].obs;
   RxString phone = "".obs;
   RxString paymentMethod = "cash".obs; // cash | bank
 
@@ -60,7 +59,7 @@ class OrderController extends GetxController {
       final data = doc.data();
       final c = CouponModel.fromJson({
         ...data,
-        'id': doc.id, // 🔥 FIX
+        'id': doc.id,
       });
       final now = DateTime.now();
 
@@ -90,7 +89,6 @@ class OrderController extends GetxController {
         discount = c.discountValue;
       }
 
-      /// 🔥 QUAN TRỌNG: set coupon
       coupon.value = c;
       discountAmount.value = discount;
       Get.snackbar("Success", "Áp dụng coupon thành công");
@@ -109,15 +107,16 @@ class OrderController extends GetxController {
 
   /// ================= ADDRESS =================
   Future fetchAddresses() async {
+    if (auth.currentUser == null) return;
     phone.value = auth.currentUser?.phone ?? "";
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(auth.currentUser!.id)
         .collection('addresses')
         .get();
-    addresses.value = snapshot.docs
+    addresses.assignAll(snapshot.docs
         .map((e) => AddressModel.fromMap(e.id, e.data()))
-        .toList();
+        .toList());
   }
 
   void selectAddress(AddressModel address) {
@@ -140,11 +139,9 @@ class OrderController extends GetxController {
         userDeviceToken: '',
         products: items,
         subTotal: subTotal.value,
-        shippingAmount: shipping, // Fix logic gốc của bạn
+        shippingAmount: shipping,
         taxRate: 0.1,
         taxAmount: tax.value,
-
-        /// 🔥 FIX COUPON
         coupon: coupon.value,
         couponDiscountAmount: discountAmount.value,
         pointsUsed: 0,
@@ -159,23 +156,17 @@ class OrderController extends GetxController {
         itemCount: items.length,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-
-        /// 🔥 FIX PAYMENT
         paymentMethod: paymentMethod.value,
         paymentMethodType: paymentMethod.value == "bank"
             ? PaymentMethods.bank
             : PaymentMethods.cash,
       );
 
-      await FirebaseFirestore.instance.collection('orders').add(order.toJson());
+      await FirebaseFirestore.instance.collection('orders').add(order.toJson() as Map<String, dynamic>);
 
-      /// 🔥 UPDATE SOLD QUANTITY
       await updateSoldQuantityAfterOrder();
-
-      /// 🔥 TĂNG usage coupon
       await increaseCouponUsage();
 
-      /// CLEAR CART
       cart.cartItems.clear();
       Get.offAll(() => const OrderSuccessScreen());
     } catch (e) {
@@ -226,6 +217,7 @@ class OrderController extends GetxController {
   Future fetchMyOrders() async {
     try {
       isLoadingOrders.value = true;
+      if (auth.currentUser == null) return;
       final userId = auth.currentUser!.id;
       final orders = await orderService.getOrdersByUser(userId);
       myOrders.assignAll(orders);
@@ -244,14 +236,13 @@ class OrderController extends GetxController {
   }
 
   Future canReviewProduct(String productId) async {
+    if (auth.currentUser == null) return false;
     final userId = auth.currentUser!.id;
-    // 1. đã mua + delivered
     final purchased = await orderService.hasUserPurchasedProduct(
       userId: userId,
       productId: productId,
     );
     if (!purchased) return false;
-    // 2. đã review chưa
     final alreadyReviewed = await hasUserReviewedProduct(
       userId: userId,
       productId: productId,
@@ -282,7 +273,7 @@ class OrderController extends GetxController {
         final data = snapshot.data()!;
         final int currentSold = data['soldQuantity'] ?? 0;
         final int stock = data['stock'] ?? 0;
-        final int newSold = currentSold + item.quantity;
+        final int newSold = (currentSold + (item.quantity as int)).toInt();
         final bool isOutOfStock = newSold >= stock;
         transaction.update(docRef, {
           'soldQuantity': newSold,

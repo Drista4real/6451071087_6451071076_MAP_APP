@@ -6,7 +6,7 @@ import 'package:ltud_lab/screens/home/home_screen.dart';
 void main() {
   testWidgets('Home screen renders shop sections', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const GetMaterialApp(
+      GetMaterialApp(
         home: HomeScreen(),
       ),
     );

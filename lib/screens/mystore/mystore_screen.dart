@@ -1,4 +1,4 @@
-import 'package:draf_project/controller/mystore_controller.dart';
+import 'package:ltud_lab/controller/mystore_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../common/widgets/product_card.dart';
@@ -207,9 +207,7 @@ class MystoreScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 25,
                       backgroundColor: Colors.blue.shade50,
-                      backgroundImage: brand.imageUrl != null
-                          ? NetworkImage(brand.imageUrl!)
-                          : null,
+                      backgroundImage: NetworkImage(brand.imageUrl),
                     ),
                     const SizedBox(height: 8),
                     Text(

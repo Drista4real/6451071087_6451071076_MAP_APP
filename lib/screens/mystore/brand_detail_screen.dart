@@ -113,16 +113,7 @@ class _BrandDetailScreenState extends State<BrandDetailScreen> {
                         child: CircleAvatar(
                           radius: 35,
                           backgroundColor: Colors.blue[50],
-                          backgroundImage: brand.imageUrl != null
-                              ? NetworkImage(brand.imageUrl!)
-                              : null,
-                          child: brand.imageUrl == null
-                              ? Icon(
-                                  Icons.store,
-                                  size: 35,
-                                  color: Colors.blue.shade300,
-                                )
-                              : null,
+                          backgroundImage: NetworkImage(brand.imageUrl),
                         ),
                       ),
                       const SizedBox(width: 20),

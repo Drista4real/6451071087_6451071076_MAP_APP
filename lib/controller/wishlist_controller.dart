@@ -1,4 +1,4 @@
-import 'package:draf_project/controller/login_controller.dart';
+import 'package:ltud_lab/controller/login_controller.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/models/product_model.dart';
@@ -62,7 +62,7 @@ class WishlistController extends GetxController {
     } else {
       await docRef.set({'productId': product.id});
       // Đảm bảo product.id là non-nullable hoặc ép kiểu nếu cần
-      wishlistIds.add(product.id!); 
+      wishlistIds.add(product.id); 
     }
     update();
   }
