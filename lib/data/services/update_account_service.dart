@@ -1,9 +1,28 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class UpdateAccountService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  /// Tải ảnh lên Firebase Storage và trả về URL
+  Future<String> uploadImage(File imageFile) async {
+    try {
+      final uid = _auth.currentUser!.uid;
+      final ref = _storage.ref().child('user_avatars').child('$uid.jpg');
+      
+      // Tải file lên
+      await ref.putFile(imageFile);
+      
+      // Lấy URL công khai
+      return await ref.getDownloadURL();
+    } catch (e) {
+      throw Exception("Lỗi khi tải ảnh lên: $e");
+    }
+  }
 
   Future<void> updateName({
     required String userId,
@@ -18,27 +37,30 @@ class UpdateAccountService {
 
   Future<void> updateUsername(String username) async {
     final uid = _auth.currentUser!.uid;
-
     await _firestore.collection('users').doc(uid).update({
       'username': username,
     });
   }
 
+  Future<void> updateProfilePicture(String imageUrl) async {
+    final uid = _auth.currentUser!.uid;
+    await _firestore.collection('users').doc(uid).update({
+      'profilePicture': imageUrl,
+    });
+  }
+
   Future<void> updatePhone(String phone) async {
     final uid = _auth.currentUser!.uid;
-
     await _firestore.collection('users').doc(uid).update({'phone': phone});
   }
 
   Future<void> updateGender(String gender) async {
     final uid = _auth.currentUser!.uid;
-
     await _firestore.collection('users').doc(uid).update({'gender': gender});
   }
 
   Future<void> updateDateOfBirth(DateTime date) async {
     final uid = _auth.currentUser!.uid;
-
     await _firestore.collection('users').doc(uid).update({
       'dateOfBirth': Timestamp.fromDate(date),
     });
@@ -46,23 +68,17 @@ class UpdateAccountService {
 
   Future<void> updateEmail(String newEmail) async {
     final user = _auth.currentUser!;
-
     if (user.email == newEmail) {
       throw Exception("Email mới trùng với email hiện tại");
     }
-
-    /// CHECK TRÙNG FIRESTORE
     final existingEmail = await _firestore
         .collection('users')
         .where('email', isEqualTo: newEmail)
         .get();
-
     if (existingEmail.docs.isNotEmpty) {
       throw Exception("Email đã tồn tại trong hệ thống");
     }
-
     try {
-      /// Gửi email xác minh trước khi đổi
       await user.verifyBeforeUpdateEmail(newEmail);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
@@ -80,7 +96,6 @@ class UpdateAccountService {
   Future<void> syncEmailAfterVerification() async {
     final user = _auth.currentUser!;
     final uid = user.uid;
-
     await _firestore.collection('users').doc(uid).update({'email': user.email});
   }
 

@@ -3,37 +3,28 @@ import 'package:get/get.dart';
 import 'package:ltud_lab/routes/app_routes.dart';
 import 'package:ltud_lab/controller/login_controller.dart';
 import 'package:ltud_lab/controller/wishlist_controller.dart';
+import 'package:ltud_lab/controller/cart_controller.dart';
 import 'package:ltud_lab/data/models/product_model.dart';
+import 'package:ltud_lab/data/models/cart_item_model.dart';
+import '../product/product_detail_screen.dart';
 
-class WishlistScreen extends StatefulWidget {
+class WishlistScreen extends StatelessWidget {
   const WishlistScreen({super.key});
 
   @override
-  State<WishlistScreen> createState() => _WishlistScreenState();
-}
-
-class _WishlistScreenState extends State<WishlistScreen> {
-  final WishlistController wishlistController = Get.find();
-
-  @override
-  void initState() {
-    super.initState();
-    // Tải dữ liệu wishlist khi vào màn hình
-    wishlistController.loadWishlist();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final AuthController authController = Get.find();
+    final AuthController authController = Get.find<AuthController>();
+    final WishlistController wishlistController = Get.find<WishlistController>();
+    final CartController cartController = Get.put(CartController());
+
     bool loggedIn = authController.currentUser != null;
 
-    // Nếu chưa đăng nhập, hiển thị màn hình yêu cầu login
     if (!loggedIn) {
       return _buildLoginRequired(context);
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Nền xám nhạt nhất quán
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
           'Danh sách yêu thích',
@@ -51,49 +42,81 @@ class _WishlistScreenState extends State<WishlistScreen> {
             ),
           ),
         ),
+        actions: [
+          Obx(() {
+            if (wishlistController.items.isNotEmpty) {
+              return IconButton(
+                icon: const Icon(Icons.delete_sweep_outlined),
+                tooltip: "Xóa tất cả",
+                onPressed: () => _showClearConfirmation(context, wishlistController),
+              );
+            }
+            return const SizedBox.shrink();
+          }),
+        ],
       ),
-      body: GetBuilder<WishlistController>(
-        builder: (controller) {
-          final items = controller.items;
-          if (items.isEmpty) {
-            return _buildEmpty();
-          }
-          return GridView.builder(
+      body: Obx(() {
+        if (wishlistController.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final items = wishlistController.items;
+        if (items.isEmpty) {
+          return _buildEmpty(context);
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => wishlistController.loadWishlist(),
+          child: GridView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: items.length,
-            physics: const BouncingScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.65, // Nhất quán với HomeScreen và Popular Screen
+              childAspectRatio: 0.58, // Điều chỉnh để đủ chỗ cho nút Add to Cart
             ),
             itemBuilder: (context, index) {
               final product = items[index];
               return _WishlistProductCard(
                 product: product,
-                onRemove: () async {
-                  await controller.removeItem(product.id);
-                  // Hiển thị snackbar hiện đại hơn
-                  Get.rawSnackbar(
-                    message: "Đã xóa khỏi danh sách yêu thích",
-                    backgroundColor: Colors.black87,
-                    snackPosition: SnackPosition.BOTTOM,
-                    margin: const EdgeInsets.all(16),
-                    borderRadius: 12,
-                    duration: const Duration(seconds: 2),
+                onRemove: () => wishlistController.removeItem(product.id),
+                onAddToCart: () {
+                  final cartItem = CartItemModel(
+                    productId: product.id,
+                    quantity: 1,
+                    title: product.title,
+                    price: product.price,
+                    image: product.thumbnail,
+                    brandName: product.brandName,
                   );
+                  cartController.addToCart(cartItem);
                 },
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      }),
     );
   }
 
-  /// Trình bày khi danh sách trống
-  Widget _buildEmpty() {
+  void _showClearConfirmation(BuildContext context, WishlistController controller) {
+    Get.defaultDialog(
+      title: "Xác nhận",
+      middleText: "Bạn có chắc chắn muốn xóa toàn bộ danh sách yêu thích không?",
+      textConfirm: "Xóa hết",
+      textCancel: "Hủy",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.red,
+      onConfirm: () {
+        controller.clearWishlist();
+        Get.back();
+      },
+    );
+  }
+
+  Widget _buildEmpty(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -113,11 +136,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
           const SizedBox(height: 24),
           const Text(
             'Danh sách đang trống',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D2D2D),
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           const Text(
@@ -133,16 +152,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade700,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                elevation: 0,
               ),
-              child: const Text(
-                'Mua sắm ngay',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              child: const Text('Mua sắm ngay'),
             ),
           ),
         ],
@@ -150,7 +163,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
     );
   }
 
-  /// Trình bày khi chưa đăng nhập
   Widget _buildLoginRequired(BuildContext context) {
     return Scaffold(
       body: Container(
@@ -165,20 +177,12 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 color: Colors.blue.withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.lock_outline_rounded,
-                size: 80,
-                color: Colors.blue.shade700,
-              ),
+              child: Icon(Icons.lock_outline_rounded, size: 80, color: Colors.blue.shade700),
             ),
             const SizedBox(height: 32),
             const Text(
               'Yêu cầu đăng nhập',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D2D2D),
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             const Text(
@@ -194,22 +198,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade700,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Đăng nhập ngay',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Get.back(),
-              child: const Text(
-                'Quay lại',
-                style: TextStyle(color: Colors.grey),
+                child: const Text('Đăng nhập ngay'),
               ),
             ),
           ],
@@ -222,30 +214,32 @@ class _WishlistScreenState extends State<WishlistScreen> {
 class _WishlistProductCard extends StatelessWidget {
   final ProductModel product;
   final VoidCallback onRemove;
+  final VoidCallback onAddToCart;
 
   const _WishlistProductCard({
     required this.product,
     required this.onRemove,
+    required this.onAddToCart,
   });
 
   @override
   Widget build(BuildContext context) {
     final bool hasDiscount = product.salePrice != null && product.salePrice! > 0;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+    return GestureDetector(
+      onTap: () => Get.to(() => ProductDetailScreen(productId: product.id)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -255,43 +249,34 @@ class _WishlistProductCard extends StatelessWidget {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: Image.network(
-                      product.thumbnail,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Icon(
-                          Icons.broken_image,
-                          color: Colors.grey,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      child: Image.network(
+                        product.thumbnail,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: Colors.grey.shade100,
+                          child: const Icon(Icons.broken_image, color: Colors.grey),
                         ),
                       ),
                     ),
                   ),
-                  /// NHÃN GIẢM GIÁ
                   if (hasDiscount)
                     Positioned(
                       top: 10,
                       left: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.orangeAccent,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           "-${product.salePrice!.toStringAsFixed(0)}%",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
-                  /// NÚT XÓA (Yêu thích)
                   Positioned(
                     top: 8,
                     right: 8,
@@ -302,74 +287,48 @@ class _WishlistProductCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                            ),
-                          ],
                         ),
-                        child: const Icon(
-                          Icons.favorite,
-                          color: Colors.red,
-                          size: 18,
-                        ),
+                        child: const Icon(Icons.favorite, color: Colors.red, size: 18),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            /// THÔNG TIN SẢN PHẨM
+            /// THÔNG TIN & NÚT BẤM
             Expanded(
-              flex: 4,
+              flex: 6,
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Text(
+                      product.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      product.brandName ?? 'FitZone',
+                      style: TextStyle(fontSize: 10, color: Colors.blue.shade700),
+                    ),
+                    const Spacer(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          product.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: Color(0xFF2D2D2D),
-                          ),
+                          "\$${product.price.toStringAsFixed(0)}",
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              product.brandName ?? 'Generic',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.blue.shade700,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.verified,
-                              size: 10,
-                              color: Colors.blue.shade700,
-                            ),
-                          ],
-                        ),
+                        IconButton(
+                          onPressed: onAddToCart,
+                          icon: const Icon(Icons.add_shopping_cart, size: 20, color: Colors.blueAccent),
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                        )
                       ],
-                    ),
-                    Text(
-                      "\$${product.price.toStringAsFixed(0)}",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
                     ),
                   ],
                 ),

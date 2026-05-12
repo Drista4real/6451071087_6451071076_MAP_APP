@@ -50,7 +50,7 @@ class HomeScreen extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Good day for shopping', style: TextStyle(color: Colors.white70)),
+                              const Text('Chào mừng bạn đến cửa hàng', style: TextStyle(color: Colors.white70)),
                               const SizedBox(height: 4),
                               Text(fullName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                             ],

@@ -31,7 +31,7 @@ class CouponModel {
     this.updateAt,
   });
 
-  Map toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'code': code,
@@ -48,7 +48,7 @@ class CouponModel {
     };
   }
 
-  factory CouponModel.fromJson(Map json) {
+  factory CouponModel.fromJson(Map<String, dynamic> json) {
     return CouponModel(
       id: json['id'],
       code: json['code'],

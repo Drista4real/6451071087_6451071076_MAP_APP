@@ -162,7 +162,7 @@ class OrderController extends GetxController {
             : PaymentMethods.cash,
       );
 
-      await FirebaseFirestore.instance.collection('orders').add(order.toJson() as Map<String, dynamic>);
+      await FirebaseFirestore.instance.collection('orders').add(order.toJson());
 
       await updateSoldQuantityAfterOrder();
       await increaseCouponUsage();
@@ -210,22 +210,26 @@ class OrderController extends GetxController {
   double _deg2rad(double deg) => deg * (pi / 180);
 
   ///////==================
-  RxList myOrders = [].obs;
+  RxList<OrderModel> myOrders = <OrderModel>[].obs;
   RxBool isLoadingOrders = false.obs;
   final orderService = OrderService();
 
-  Future fetchMyOrders() async {
-    try {
-      isLoadingOrders.value = true;
-      if (auth.currentUser == null) return;
-      final userId = auth.currentUser!.id;
-      final orders = await orderService.getOrdersByUser(userId);
-      myOrders.assignAll(orders);
-    } catch (e) {
-      Get.snackbar("Error", "Không load được orders: $e");
-    } finally {
-      isLoadingOrders.value = false;
-    }
+  void fetchMyOrders() {
+    if (auth.currentUser == null) return;
+    
+    isLoadingOrders.value = true;
+    final userId = auth.currentUser!.id;
+    
+    // Lắng nghe thay đổi thời gian thực
+    myOrders.bindStream(orderService.getOrdersStream(userId));
+    
+    // Tắt loading sau khi có dữ liệu đầu tiên (hoặc timeout)
+    ever(myOrders, (_) => isLoadingOrders.value = false);
+    
+    // Đảm bảo loading biến mất nếu không có đơn nào
+    Future.delayed(const Duration(seconds: 2), () {
+      if (myOrders.isEmpty) isLoadingOrders.value = false;
+    });
   }
 
   Future cancelOrder(String orderId) async {

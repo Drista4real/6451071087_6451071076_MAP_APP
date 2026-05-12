@@ -81,7 +81,7 @@ class OrderModel {
     this.amountCaptured = 0.0,
   });
 
-  Map toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'userId': userId,
@@ -90,58 +90,69 @@ class OrderModel {
       'shippingAmount': shippingAmount,
       'taxRate': taxRate,
       'taxAmount': taxAmount,
-      /// FIX COUPON
       'coupon': coupon != null ? coupon!.toJson() : null,
       'couponDiscountAmount': couponDiscountAmount,
       'totalDiscountAmount': totalDiscountAmount,
       'totalAmount': totalAmount,
+      'total': totalAmount, // Đồng bộ với Admin
       'paymentStatus': paymentStatus,
       'orderStatus': orderStatus,
+      'status': orderStatus, // Đồng bộ với Admin
       'orderDate': orderDate,
       'shippingDate': shippingDate,
       'shippingAddress': shippingAddress,
       'itemCount': itemCount,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
-      ///FIX PAYMENT
       'paymentMethod': paymentMethod,
       'paymentMethodType': paymentMethodType.name,
     };
   }
 
-  factory OrderModel.fromJson(Map json) {
+  factory OrderModel.fromJson(Map<String, dynamic> json) {
+    // 🔥 QUAN TRỌNG: Ưu tiên trường 'status' vì Web Admin cập nhật trường này
+    // Nếu 'status' không có mới dùng 'orderStatus'
+    String rawStatus = (json['status'] ?? json['orderStatus'] ?? 'created').toString().toLowerCase();
+    
+    // Chuẩn hóa trạng thái từ Admin (pending, confirmed, shipping) về App (created, processing, shipped)
+    String normalizedStatus = rawStatus;
+    if (rawStatus == 'pending') normalizedStatus = 'created';
+    if (rawStatus == 'confirmed') normalizedStatus = 'processing';
+    if (rawStatus == 'shipping') normalizedStatus = 'shipped';
+
     return OrderModel(
       docId: json['docId'] ?? '',
-      id: json['id'],
-      userId: json['userId'],
+      id: json['id']?.toString() ?? '',
+      userId: json['userId'] ?? '',
       userDeviceToken: '',
-      products: (json['products'] as List)
-          .map((e) => CartItemModel.fromJson(e))
-          .toList(),
+      products: (json['products'] as List?)
+              ?.map((e) => CartItemModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       subTotal: (json['subTotal'] ?? 0).toDouble(),
-      shippingAmount: json['shippingAmount'] ?? 0,
+      shippingAmount: (json['shippingAmount'] ?? 0).toInt(),
       taxRate: (json['taxRate'] ?? 0).toDouble(),
       taxAmount: (json['taxAmount'] ?? 0).toDouble(),
       coupon: json['coupon'] != null
-          ? CouponModel.fromJson(json['coupon'])
+          ? CouponModel.fromJson(json['coupon'] as Map<String, dynamic>)
           : null,
       couponDiscountAmount: (json['couponDiscountAmount'] ?? 0).toDouble(),
       pointsUsed: 0,
       pointsDiscountAmount: 0,
       totalDiscountAmount: (json['totalDiscountAmount'] ?? 0).toDouble(),
-      totalAmount: (json['totalAmount'] ?? 0).toDouble(),
-      paymentStatus: json['paymentStatus'],
-      orderStatus: json['orderStatus'],
-      orderDate: json['orderDate'].toDate(),
-      /// 🔥 FIX QUAN TRỌNG
+      // Đọc cả totalAmount hoặc total (Admin thường dùng 'total')
+      totalAmount: (json['totalAmount'] ?? json['total'] ?? 0).toDouble(),
+      paymentStatus: json['paymentStatus'] ?? 'pending',
+      orderStatus: normalizedStatus,
+      orderDate: json['orderDate'] != null ? (json['orderDate'] as dynamic).toDate() : DateTime.now(),
       shippingDate: json['shippingDate'] != null
-          ? json['shippingDate'].toDate()
+          ? (json['shippingDate'] as dynamic).toDate()
           : null,
-      shippingAddress: json['shippingAddress'],
+      shippingAddress: json['shippingAddress'] ?? {},
       activities: [],
       itemCount: json['itemCount'] ?? 0,
-      createdAt: json['createdAt'].toDate(),
-      updatedAt: json['updatedAt'].toDate(),
+      createdAt: json['createdAt'] != null ? (json['createdAt'] as dynamic).toDate() : DateTime.now(),
+      updatedAt: json['updatedAt'] != null ? (json['updatedAt'] as dynamic).toDate() : DateTime.now(),
       paymentMethod: json['paymentMethod'] ?? '',
       paymentMethodType: json['paymentMethodType'] == 'bank'
           ? PaymentMethods.bank

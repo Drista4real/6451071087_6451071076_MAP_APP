@@ -5,27 +5,40 @@ class OrderService {
   final _db = FirebaseFirestore.instance;
 
   Future<void> createOrder(OrderModel order) async {
-    await _db.collection('orders').add({
-      'id': order.id,
-      'userId': order.userId,
-      'total': order.totalAmount,
-      'status': order.orderStatus,
-      'createdAt': DateTime.now(),
+    await _db.collection('orders').add(order.toJson());
+  }
+
+  // Lấy danh sách đơn hàng theo kiểu Stream (Real-time)
+  Stream<List<OrderModel>> getOrdersStream(String userId) {
+    return _db
+        .collection('orders')
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+      final orders = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return OrderModel.fromJson({...data, 'docId': doc.id});
+      }).toList();
+      
+      // Sắp xếp đơn mới nhất lên đầu
+      orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return orders;
     });
   }
 
   Future<List<OrderModel>> getOrdersByUser(String userId) async {
     final snapshot = await _db
         .collection('orders')
-        // Đã xoá đoạn text copy nhầm (Ths. Nguyễn Thiện Dương...) gây lỗi cú pháp ở đây
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .get();
 
-    return snapshot.docs.map((doc) {
+    final orders = snapshot.docs.map((doc) {
       final data = doc.data();
       return OrderModel.fromJson({...data, 'docId': doc.id});
     }).toList();
+
+    orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return orders;
   }
 
   Future<bool> hasUserPurchasedProduct({
@@ -35,7 +48,7 @@ class OrderService {
     final snapshot = await _db
         .collection('orders')
         .where('userId', isEqualTo: userId)
-        .where('orderStatus', isEqualTo: 'delivered') // 🔥 ONLY delivered
+        .where('orderStatus', isEqualTo: 'delivered')
         .get();
 
     for (var doc in snapshot.docs) {

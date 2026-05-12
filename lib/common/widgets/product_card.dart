@@ -159,7 +159,7 @@ class ProductCard extends StatelessWidget {
                       product.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, height: 1.2),
+                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, height: 1.2, color: Colors.black87),
                     ),
                     const Spacer(),
                     Wrap(
@@ -175,7 +175,7 @@ class ProductCard extends StatelessWidget {
                             "\$${originalPrice.toStringAsFixed(0)}",
                             style: TextStyle(
                               decoration: TextDecoration.lineThrough,
-                              color: Colors.grey[400],
+                              color: Colors.grey[600],
                               fontSize: 10,
                             ),
                           ),
@@ -190,7 +190,7 @@ class ProductCard extends StatelessWidget {
                           children: [
                             const Icon(Icons.star, size: 12, color: Colors.orange),
                             const SizedBox(width: 2),
-                            Text("${product.rating}", style: TextStyle(fontSize: 10, color: Colors.grey[600])),
+                            Text("${product.rating}", style: const TextStyle(fontSize: 10, color: Colors.black54)),
                           ],
                         ),
                         Obx(() {

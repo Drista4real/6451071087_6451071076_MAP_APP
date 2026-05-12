@@ -6,6 +6,8 @@ import 'all_brand_screen.dart';
 import 'brand_detail_screen.dart';
 import '/controller/brand_controller.dart';
 import '/screens/product/product_by_subcategory_screen.dart';
+import '../../controller/notification_controller.dart';
+import '../notifications/my_notifications.dart';
 
 class MystoreScreen extends StatelessWidget {
   MystoreScreen({super.key});
@@ -61,12 +63,51 @@ class MystoreScreen extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          _buildHeaderIcon(Icons.search_rounded, () {}),
+                          
+                          /// Nút Tìm kiếm
+                          _buildHeaderIcon(Icons.search_rounded, () {
+                            Get.offAllNamed('/home'); // Quay về trang chủ để thực hiện tìm kiếm
+                          }),
                           const SizedBox(width: 10),
-                          _buildHeaderIcon(
-                            Icons.notifications_none_rounded,
-                            () {},
-                          ),
+
+                          /// Nút Thông báo với số lượng chưa đọc
+                          Obx(() {
+                            final notificationController = Get.put(NotificationController());
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                _buildHeaderIcon(
+                                  Icons.notifications_none_rounded,
+                                  () => Get.to(() => MyNotificationScreen()),
+                                ),
+                                if (notificationController.unreadCount.value > 0)
+                                  Positioned(
+                                    right: -2,
+                                    top: -2,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 16,
+                                        minHeight: 16,
+                                      ),
+                                      child: Text(
+                                        '${notificationController.unreadCount.value}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          }),
                         ],
                       ),
                     ),

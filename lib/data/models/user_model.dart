@@ -5,6 +5,7 @@ class UserModel {
   final String username;
   final String email;
   final String phone;
+  final String? profilePicture;
 
   const UserModel({
     required this.id,
@@ -13,6 +14,7 @@ class UserModel {
     required this.username,
     required this.email,
     required this.phone,
+    this.profilePicture,
   });
 
   String get fullName => ('$firstName $lastName').trim();
@@ -25,6 +27,7 @@ class UserModel {
       username: (map['username'] ?? '') as String,
       email: (map['email'] ?? '') as String,
       phone: (map['phone'] ?? '') as String,
+      profilePicture: map['profilePicture'] as String?,
     );
   }
 
@@ -36,6 +39,7 @@ class UserModel {
       'username': username,
       'email': email,
       'phone': phone,
+      'profilePicture': profilePicture,
     };
   }
 
@@ -46,6 +50,7 @@ class UserModel {
     String? username,
     String? email,
     String? phone,
+    String? profilePicture,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -54,6 +59,7 @@ class UserModel {
       username: username ?? this.username,
       email: email ?? this.email,
       phone: phone ?? this.phone,
+      profilePicture: profilePicture ?? this.profilePicture,
     );
   }
 }

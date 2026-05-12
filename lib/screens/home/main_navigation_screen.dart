@@ -48,19 +48,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'Trang chủ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.business),
-            label: 'My store',
+            label: 'Cửa hàng',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite_border),
-            label: 'Wishlist',
+            label: 'Yêu thích',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: 'Tài khoản',
           ),
         ],
       ),
